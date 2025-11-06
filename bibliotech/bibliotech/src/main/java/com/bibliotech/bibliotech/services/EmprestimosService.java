@@ -254,7 +254,12 @@ public class EmprestimosService {
                     dataPrazoFormatada
             );
 
-            emailSend.sendEmail(emprestimo.getAluno().getEmail(), assunto, mensagem);
+            boolean response = notificationService.sendNotification(emprestimo.getAluno().getEmail(), assunto, mensagem);
+            if (!response){
+                throw new RuntimeException(
+                        "Falha ao enviar email para " + emprestimo.getAluno().getEmail()
+                );
+            }
 
             emprestimo.setDataUltimaNotificacao(hoje);
             emprestimoRepository.save(emprestimo);
