@@ -35,7 +35,21 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
     implementation 'com.auth0:java-jwt:4.5.0'
+    // Use a springdoc starter compatible with Spring Framework 6.2 / Spring Boot 3.x
+    // Updated to 2.8.x (2.8.0) which is compatible with Spring Framework 6.2
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0'
 }
+
+// Force any transitive org.springframework.boot artifacts to the plugin's version (3.4.0)
+// This avoids accidentally pulling Spring Boot 4.x via a starter.
+//configurations.all {
+//    resolutionStrategy.eachDependency { details ->
+//        if (details.requested.group == 'org.springframework.boot') {
+//            details.useVersion '3.4.0'
+//            details.because('Align Spring Boot artifacts to plugin version 3.4.0')
+//        }
+//    }
+//}
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
@@ -48,4 +62,3 @@ tasks.named('test') {
 // Keep the jar task default; bootJar will create executable jar when using Spring Boot plugin
 
 // Note: If you want Gradle wrapper files generated, run `gradle wrapper` or `./gradlew wrapper` locally.
-

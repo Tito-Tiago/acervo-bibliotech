@@ -9,6 +9,7 @@ import com.bibliotech.bibliotech.services.PdfExportService;
 import org.springframework.http.HttpHeaders;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.stream.Collectors;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,12 +28,10 @@ import java.util.List;
 public class AlunoController {
 
     private final AlunosService alunosService;
-    private final AlunoResponseMapper alunoResponseMapper;
     private final PdfExportService pdfExportService;
 
-    public AlunoController(AlunosService alunosService, AlunoResponseMapper alunoResponseMapper, PdfExportService pdfExportService) {
+    public AlunoController(AlunosService alunosService, PdfExportService pdfExportService) {
         this.alunosService = alunosService;
-        this.alunoResponseMapper = alunoResponseMapper;
         this.pdfExportService = pdfExportService;
     }
 
@@ -50,7 +51,14 @@ public class AlunoController {
 
         Page<Aluno> alunosPage = alunosService.filtrarAlunos(serie, turma, nome, situacao, ativo, pageable);
 
-        Page<AlunoResponseDTO> alunosResponseDTOPage = alunosPage.map(aluno -> AlunoResponseMapper.toDto(aluno));
+        // convert Page<Aluno> to Page<AlunoResponseDTO>
+        Page<AlunoResponseDTO> alunosResponseDTOPage = new PageImpl<>(
+                alunosPage.getContent().stream()
+                        .map(AlunoResponseMapper::toDto)
+                        .collect(Collectors.toList()),
+                alunosPage.getPageable(),
+                alunosPage.getTotalElements()
+        );
 
         return ResponseEntity.ok(alunosResponseDTOPage);
     }
@@ -68,7 +76,7 @@ public class AlunoController {
     public ResponseEntity<AlunoResponseDTO> atualizarAluno(
             @PathVariable Integer id,
             @RequestBody AlunoRequestDTO requestDTO) {
-        return ResponseEntity.ok(alunoResponseMapper.toDto(alunosService.atualizarAluno(id, requestDTO)));
+        return ResponseEntity.ok(AlunoResponseMapper.toDto(alunosService.atualizarAluno(id, requestDTO)));
     }
 
     @PatchMapping("/inativar/{id}")

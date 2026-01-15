@@ -1,28 +1,23 @@
+# dockerfile
 FROM gradle:9.1-jdk21 AS build
-
-# Diretório de trabalho no container
 WORKDIR /app
 
-# Copiar todo o projeto (inclui gradlew e gradle/wrapper)
-COPY . .
+COPY gradle gradle
+COPY gradlew .
+COPY build.gradle settings.gradle* ./
+COPY src src
 
-# Garantir permissões do wrapper (caso não seja executável por default)
-RUN chmod +x ./gradlew || true
+# Remover CRLF se existirem, tornar executável e gerar o JAR
+RUN sed -i 's/\r$//' ./gradlew \
+    && chmod +x ./gradlew \
+    && ./gradlew clean bootJar -x test --no-daemon
 
-# Build usando Gradle Wrapper (gera bootJar em build/libs)
-RUN ./gradlew clean bootJar -x test --no-daemon
-
-# Preparar artefato
 RUN mkdir -p /app/dist \
     && cp build/libs/*.jar /app/dist/app.jar
 
-# Runtime leve
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /app/dist/app.jar ./app.jar
 
-# Expôr a porta em que o Spring Boot estará rodando
 EXPOSE 8090
-
-# Comando para rodar a aplicação
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java","-jar","app.jar"]
