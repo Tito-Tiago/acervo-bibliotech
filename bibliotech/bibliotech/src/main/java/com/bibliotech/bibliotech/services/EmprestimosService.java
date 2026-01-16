@@ -11,7 +11,6 @@ import com.bibliotech.bibliotech.facades.EmprestimoFacade;
 import com.bibliotech.bibliotech.models.Emprestimo;
 import com.bibliotech.bibliotech.repositories.EmprestimoRepository;
 import com.bibliotech.bibliotech.specifications.EmprestimoSpecification;
-import com.bibliotech.bibliotech.utils.EmailSend;
 import com.bibliotech.bibliotech.utils.FormatarData;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +35,6 @@ public class EmprestimosService {
     private final EmprestimoRepository emprestimoRepository;
     private final EmprestimoResponseMapper emprestimoResponseMapper;
     private final EmprestimoSpecification emprestimoSpecification;
-    private final EmailSend emailSend;
     private final NotificationService notificationService;
 
     @Autowired
@@ -45,13 +43,11 @@ public class EmprestimosService {
             EmprestimoRepository emprestimoRepository,
             EmprestimoResponseMapper emprestimoResponseMapper,
             EmprestimoSpecification emprestimoSpecification,
-            EmailSend emailSend,
             NotificationService notificationService) {
         this.emprestimoFacade = emprestimoFacade;
         this.emprestimoRepository = emprestimoRepository;
         this.emprestimoResponseMapper = emprestimoResponseMapper;
         this.emprestimoSpecification = emprestimoSpecification;
-        this.emailSend = emailSend;
         this.notificationService = notificationService;
     }
 
@@ -203,10 +199,16 @@ public class EmprestimosService {
                     dataEmprestimoFormatada,
                     dataPrazoFormatada
             );
-            boolean response = notificationService.sendNotification(emprestimo.getAluno().getEmail(), assunto, mensagem);
+
+            boolean response = notificationService.sendNotification(
+                    emprestimo.getAluno().getEmail(),
+                    assunto,
+                    mensagem
+            );
+
             if (!response){
                 throw new RuntimeException(
-                        "Falha ao enviar email para " + emprestimo.getAluno().getEmail()
+                        "Falha ao enviar notificação para " + emprestimo.getAluno().getEmail()
                 );
             }
 
@@ -254,10 +256,15 @@ public class EmprestimosService {
                     dataPrazoFormatada
             );
 
-            boolean response = notificationService.sendNotification(emprestimo.getAluno().getEmail(), assunto, mensagem);
+            boolean response = notificationService.sendNotification(
+                    emprestimo.getAluno().getEmail(),
+                    assunto,
+                    mensagem
+            );
+
             if (!response){
                 throw new RuntimeException(
-                        "Falha ao enviar email para " + emprestimo.getAluno().getEmail()
+                        "Falha ao enviar notificação para " + emprestimo.getAluno().getEmail()
                 );
             }
 
